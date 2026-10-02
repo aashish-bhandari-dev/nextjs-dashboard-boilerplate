@@ -2,14 +2,19 @@ import Link from "next/link";
 
 export function AuthFooter() {
   return (
-    <div className="text-muted-foreground flex flex-col items-center justify-between gap-2 border-t pt-4 text-xs sm:flex-row">
-      <p>© {new Date().getFullYear()} AdminHub Inc. All rights reserved.</p>
-      <div className="flex gap-4">
-        <Link href="#privacy" className="hover:underline">
-          Privacy Policy
+    <div className="text-muted-foreground/80 flex items-center justify-between border-t pt-3 text-[11px]">
+      <p>© {new Date().getFullYear()} AdminHub. All rights reserved.</p>
+      <div className="flex items-center gap-2.5">
+        <Link href="#privacy" className="hover:text-foreground transition-colors">
+          Privacy
         </Link>
-        <Link href="#terms" className="hover:underline">
-          Terms of Service
+        <span className="text-muted-foreground/40">•</span>
+        <Link href="#terms" className="hover:text-foreground transition-colors">
+          Terms
+        </Link>
+        <span className="text-muted-foreground/40">•</span>
+        <Link href="#security" className="hover:text-foreground transition-colors">
+          Security
         </Link>
       </div>
     </div>

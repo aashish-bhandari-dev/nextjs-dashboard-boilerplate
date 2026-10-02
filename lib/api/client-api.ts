@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import Cookies from 'js-cookie';
 
 const baseURL = 
-    (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '') + 
+    (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001').replace(/\/$/, '') + 
     '/api/v1';
 
 const api: AxiosInstance = axios.create({
@@ -38,8 +38,9 @@ api.interceptors.response.use(
 
                 Cookies.remove('access_token', cookieConfig);
 
-                if (window.location.pathname !== '/auth/login') {
-                    window.location.href = '/auth/login';
+                if (window.location.pathname !== '/login') {
+                    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+                    window.location.href = '/login';
                 }
             }
         }
@@ -47,27 +48,27 @@ api.interceptors.response.use(
     },
 );
 
-const get = async <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+const get = async <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     const response: AxiosResponse<T> = await api.get(url, config);
     return response.data;
 };
 
-const post = async <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+const post = async <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     const response: AxiosResponse<T> = await api.post(url, data, config);
     return response.data;
 };
 
-const put = async <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+const put = async <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     const response: AxiosResponse<T> = await api.put(url, data, config);
     return response.data;
 };
 
-const patch = async <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+const patch = async <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     const response: AxiosResponse<T> = await api.patch(url, data, config);
     return response.data;
 };
 
-const del = async <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+const del = async <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     const response: AxiosResponse<T> = await api.delete(url, config);
     return response.data;
 };
