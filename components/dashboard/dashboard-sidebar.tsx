@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Activity,
   BarChart3,
@@ -37,18 +38,11 @@ const navigationItems = [
         title: "Dashboard",
         href: "/",
         icon: LayoutDashboard,
-        isActive: true,
       },
       {
         title: "Analytics",
         href: "#analytics",
         icon: BarChart3,
-      },
-      {
-        title: "System Health",
-        href: "#health",
-        icon: Activity,
-        badge: "Live",
       },
     ],
   },
@@ -57,67 +51,46 @@ const navigationItems = [
     items: [
       {
         title: "User Directory",
-        href: "#users",
+        href: "/users",
         icon: Users,
-        badge: "1,280",
       },
       {
         title: "Roles & Permissions",
         href: "#roles",
         icon: ShieldCheck,
       },
-      {
-        title: "Invoices & Billing",
-        href: "#invoices",
-        icon: CreditCard,
-      },
-      {
-        title: "Audit & Access Logs",
-        href: "#audit-logs",
-        icon: FileText,
-      },
-    ],
-  },
-  {
-    group: "System & Security",
-    items: [
-      {
-        title: "Portal Settings",
-        href: "#settings",
-        icon: Settings,
-      },
-      {
-        title: "API Keys & Webhooks",
-        href: "#api-keys",
-        icon: KeyRound,
-      },
-      {
-        title: "Threat & Lockout Rules",
-        href: "#security-rules",
-        icon: ShieldAlert,
-      },
     ],
   },
 ];
 
 export function DashboardSidebar() {
+  const pathname = usePathname();
+
+  const isItemActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    if (href.startsWith("#")) return false;
+    return pathname === href || pathname.startsWith(href + "/");
+  };
+
   return (
     <Sidebar collapsible="icon">
       {/* Brand Header */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" className="hover:bg-transparent">
-              <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-black text-xs tracking-wider shadow-sm">
-                AH
-              </div>
-              <div className="grid flex-1 text-left text-xs leading-tight">
-                <span className="truncate font-bold">AdminHub</span>
-                <span className="truncate text-[10px] text-muted-foreground font-medium">
-                  Enterprise Console
-                </span>
-              </div>
-            </SidebarMenuButton>
+            <Link href="/" className="w-full">
+              <SidebarMenuButton size="lg" className="hover:bg-muted">
+                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-black text-xs tracking-wider shadow-sm">
+                  AH
+                </div>
+                <div className="grid flex-1 text-left text-xs leading-tight">
+                  <span className="truncate font-bold">AdminHub</span>
+                  <span className="truncate text-[10px] text-muted-foreground font-medium">
+                    Enterprise Console
+                  </span>
+                </div>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -131,20 +104,19 @@ export function DashboardSidebar() {
               <SidebarMenu>
                 {section.items.map((item) => {
                   const Icon = item.icon;
+                  const active = isItemActive(item.href);
+
                   return (
                     <SidebarMenuItem key={item.title}>
                       <Link href={item.href} className="w-full">
                         <SidebarMenuButton
-                          isActive={item.isActive}
+                          isActive={active}
                           tooltip={item.title}
                         >
                           <Icon className="size-4 shrink-0" />
                           <span>{item.title}</span>
                         </SidebarMenuButton>
                       </Link>
-                      {item.badge && (
-                        <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
-                      )}
                     </SidebarMenuItem>
                   );
                 })}

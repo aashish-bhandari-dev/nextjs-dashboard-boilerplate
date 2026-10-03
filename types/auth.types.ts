@@ -34,6 +34,7 @@ export interface User {
   locale?: string;
   timezone?: string;
   role: string;
+  roleId?: string;
   hasCustomPermissions?: boolean;
   isActive: boolean;
   isDeactivated: boolean;
@@ -42,6 +43,7 @@ export interface User {
   isPhoneVerified: boolean;
   phoneVerifiedAt?: Date | string | null;
   provider: string;
+  providerId?: string | null;
   permissions: string[];
   lastLoginAt?: Date | string | null;
   metadata?: Record<string, unknown>;

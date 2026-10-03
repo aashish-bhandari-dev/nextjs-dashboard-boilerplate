@@ -51,37 +51,10 @@ export function DashboardTopbar() {
       {/* Left: Official shadcn SidebarTrigger & Breadcrumbs */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="hover:text-foreground transition-colors cursor-pointer">
-            Portal
-          </span>
-          <span>/</span>
-          <span className="font-semibold text-foreground">Dashboard Overview</span>
-        </div>
       </div>
 
       {/* Right: Search, Notifications, and Admin User Profile */}
       <div className="flex items-center gap-3">
-        {/* Search */}
-        <div className="relative hidden md:block w-64 lg:w-72">
-          <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-2.5 h-3.5 w-3.5" />
-          <Input
-            type="search"
-            placeholder="Search console..."
-            className="h-9 pl-8 pr-12 text-xs bg-muted/40"
-          />
-          <kbd className="bg-background text-muted-foreground pointer-events-none absolute top-2 right-2.5 inline-flex h-5 items-center gap-0.5 rounded border px-1.5 font-mono text-[10px] font-medium shadow-xs">
-            ⌘K
-          </kbd>
-        </div>
-
-        {/* Status Indicator */}
-        <div className="hidden xl:flex items-center gap-1.5 rounded-full border bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Services Healthy</span>
-        </div>
-
         {/* Notifications */}
         <Button
           variant="outline"
@@ -112,12 +85,6 @@ export function DashboardTopbar() {
                 <span className="text-xs font-semibold text-foreground">
                   {displayName}
                 </span>
-                <Badge
-                  variant="outline"
-                  className="text-[9px] px-1 py-0 h-3.5 font-bold border-primary/30 text-primary"
-                >
-                  {displayRole}
-                </Badge>
               </div>
               <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
                 {displayEmail}

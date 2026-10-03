@@ -126,5 +126,29 @@
   }
   html {
     @apply font-sans;
+    scrollbar-gutter: stable;
+  }
+
+  /* Ensure all clickable and interactive elements display pointer cursor */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]):not([data-disabled]),
+  [role="menuitem"]:not([aria-disabled="true"]):not([data-disabled]),
+  [role="menuitemcheckbox"]:not([aria-disabled="true"]):not([data-disabled]),
+  [role="menuitemradio"]:not([aria-disabled="true"]):not([data-disabled]),
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="switch"]:not([aria-disabled="true"]),
+  [role="checkbox"]:not([aria-disabled="true"]):not([data-disabled]),
+  [role="radio"]:not([aria-disabled="true"]):not([data-disabled]),
+  [type="button"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="checkbox"]:not(:disabled),
+  [type="radio"]:not(:disabled),
+  [data-slot="dropdown-menu-item"]:not([data-disabled]),
+  [data-slot="dropdown-menu-trigger"],
+  select:not(:disabled),
+  summary,
+  a {
+    cursor: pointer;
   }
 }

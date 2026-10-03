@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuthStore } from "@/store/auth.store";
 import { authRepo } from "@/repo/auth.repo";
+import { loginFormSchema } from "@/schemas";
 
 export function LoginForm() {
   const router = useRouter();
@@ -44,12 +45,19 @@ export function LoginForm() {
     e.preventDefault();
     setErrorMessage(null);
 
-    const trimmedIdentifier = identifier.trim();
-    if (!trimmedIdentifier || !password) {
-      setErrorMessage("Please enter both administrator credentials and password.");
+    const parseResult = loginFormSchema.safeParse({
+      identifier,
+      password,
+      rememberMe,
+    });
+
+    if (!parseResult.success) {
+      const msg = parseResult.error.issues[0]?.message || "Please enter valid credentials.";
+      setErrorMessage(msg);
       return;
     }
 
+    const trimmedIdentifier = identifier.trim();
     setIsLoading(true);
 
     // Call AuthRepo outside the store
