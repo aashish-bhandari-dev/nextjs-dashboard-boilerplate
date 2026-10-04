@@ -6,7 +6,6 @@ import {
   Bell,
   ChevronDown,
   LogOut,
-  Search,
   Settings,
   ShieldCheck,
   UserCheck,
@@ -23,7 +22,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/store/auth.store";

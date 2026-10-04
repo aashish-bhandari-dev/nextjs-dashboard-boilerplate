@@ -4,14 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Activity,
   BarChart3,
-  CreditCard,
-  FileText,
-  KeyRound,
   LayoutDashboard,
-  Settings,
-  ShieldAlert,
   ShieldCheck,
   Users,
 } from "lucide-react";
@@ -24,7 +18,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -56,7 +49,7 @@ const navigationItems = [
       },
       {
         title: "Roles & Permissions",
-        href: "#roles",
+        href: "/roles",
         icon: ShieldCheck,
       },
     ],

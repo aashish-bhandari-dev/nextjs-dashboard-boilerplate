@@ -1,0 +1,22 @@
+import type { Metadata } from "next";
+import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
+import { RoleDetailsView } from "@/components/roles/role-details-view";
+
+export const metadata: Metadata = {
+  title: "Role Configuration & Details | AdminHub",
+  description: "View comprehensive role metadata, granted authorization policies, and assigned users.",
+};
+
+interface RoleDetailsPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function RoleDetailsPage({ params }: RoleDetailsPageProps) {
+  const { id } = await params;
+
+  return (
+    <DashboardLayoutWrapper>
+      <RoleDetailsView roleId={id} />
+    </DashboardLayoutWrapper>
+  );
+}
