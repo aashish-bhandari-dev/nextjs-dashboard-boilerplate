@@ -1,6 +1,36 @@
-import { User } from './auth.types';
+import { BaseApiResponse, BasePaginatedResponse } from './base.types';
 
-export type { User };
+export interface User {
+  id: string;
+  firstName: string;
+  lastName?: string | null;
+  fullName: string;
+  username?: string | null;
+  email: string;
+  phone?: string | null;
+  image?: string | null;
+  bio?: string | null;
+  gender?: string | null;
+  dateOfBirth?: Date | string | null;
+  locale?: string;
+  timezone?: string;
+  role: string;
+  roleId?: string;
+  hasCustomPermissions?: boolean;
+  isActive: boolean;
+  isDeactivated: boolean;
+  isEmailVerified: boolean;
+  emailVerifiedAt?: Date | string | null;
+  isPhoneVerified: boolean;
+  phoneVerifiedAt?: Date | string | null;
+  provider: string;
+  providerId?: string | null;
+  permissions: string[];
+  lastLoginAt?: Date | string | null;
+  metadata?: Record<string, unknown>;
+  createdAt: Date | string;
+  updatedAt?: Date | string;
+}
 
 export interface CreateUserInput {
   firstName: string;
@@ -43,22 +73,5 @@ export interface UserQuery extends Record<string, string | number | boolean | un
   sortOrder?: 'asc' | 'desc';
 }
 
-export interface PaginatedUsersData {
-  users: User[];
-  meta?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-  total?: number;
-  page?: number;
-  limit?: number;
-  totalPages?: number;
-}
+export type GetPaginatedUserResponse = BasePaginatedResponse<User>;
+export type GetUserResponse = BaseApiResponse<User>;

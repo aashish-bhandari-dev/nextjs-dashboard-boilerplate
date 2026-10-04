@@ -5,8 +5,8 @@ import {
   AuthResponseData,
   AuthTokens,
   isAllowedDashboardRole,
-  User,
 } from '@/types/auth.types';
+import { User } from '@/types/user.types';
 
 interface AuthState {
   user: User | null;

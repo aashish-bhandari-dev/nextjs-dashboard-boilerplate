@@ -1,3 +1,6 @@
+import { BaseApiResponse } from './base.types';
+import { User } from './user.types';
+
 export type AllowedRole = 'SUPER_ADMIN' | 'ADMIN';
 
 export const ALLOWED_DASHBOARD_ROLES: AllowedRole[] = ['SUPER_ADMIN', 'ADMIN'];
@@ -19,47 +22,9 @@ export interface AuthTokens {
   expiresIn?: number;
 }
 
-export interface User {
-  id: string;
-  firstName: string;
-  lastName?: string | null;
-  fullName: string;
-  username?: string | null;
-  email: string;
-  phone?: string | null;
-  image?: string | null;
-  bio?: string | null;
-  gender?: string | null;
-  dateOfBirth?: Date | string | null;
-  locale?: string;
-  timezone?: string;
-  role: string;
-  roleId?: string;
-  hasCustomPermissions?: boolean;
-  isActive: boolean;
-  isDeactivated: boolean;
-  isEmailVerified: boolean;
-  emailVerifiedAt?: Date | string | null;
-  isPhoneVerified: boolean;
-  phoneVerifiedAt?: Date | string | null;
-  provider: string;
-  providerId?: string | null;
-  permissions: string[];
-  lastLoginAt?: Date | string | null;
-  metadata?: Record<string, unknown>;
-  createdAt: Date | string;
-  updatedAt?: Date | string;
-}
-
 export interface AuthResponseData {
   user: User;
   tokens: AuthTokens;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-  statusCode?: number;
-  errors?: unknown[];
-}
+export type LoginResponse = BaseApiResponse<AuthResponseData>;

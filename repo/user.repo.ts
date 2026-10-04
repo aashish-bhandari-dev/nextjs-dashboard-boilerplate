@@ -1,7 +1,8 @@
-import { ApiResponse } from '@/types/auth.types';
+import { BaseApiResponse, PaginationMeta } from '@/types/base.types';
 import {
   CreateUserInput,
-  PaginatedUsersData,
+  GetPaginatedUserResponse,
+  GetUserResponse,
   UpdateUserInput,
   User,
   UserQuery,
@@ -30,9 +31,9 @@ class UserRepo {
     onError,
   }: {
     query?: UserQuery;
-    onSuccess: (users: User[], total?: number) => void;
+    onSuccess: (users: User[], total?: number, meta?: PaginationMeta) => void;
     onError: (message: string) => void;
-  }): Promise<{ users: User[]; total: number } | undefined> {
+  }): Promise<{ users: User[]; total: number; meta?: PaginationMeta } | undefined> {
     try {
       const params = {
         ...query,
@@ -41,15 +42,13 @@ class UserRepo {
           : {}),
       };
 
-      const response = await clientApi.get<
-        ApiResponse<PaginatedUsersData | User[]> | PaginatedUsersData | User[]
-      >('/users', {
+      const response = await clientApi.get<GetPaginatedUserResponse | User[]>('/users', {
         params,
       });
 
-      // Normalize various possible backend response wrappers
       let userList: User[] = [];
       let totalCount = 0;
+      let meta: PaginationMeta | undefined;
 
       const raw = response as unknown as Record<string, unknown>;
 
@@ -58,8 +57,8 @@ class UserRepo {
         totalCount = userList.length;
       } else if (Array.isArray(raw?.data)) {
         userList = raw.data as User[];
-        const metaObj = raw?.meta as Record<string, unknown> | undefined;
-        totalCount = (metaObj?.total as number) ?? (raw.total as number) ?? userList.length;
+        meta = raw?.meta as PaginationMeta | undefined;
+        totalCount = (meta?.total as number) ?? (raw.total as number) ?? userList.length;
       } else if (raw?.data && typeof raw.data === 'object') {
         const dataObj = raw.data as Record<string, unknown>;
         if (Array.isArray(dataObj.users)) {
@@ -75,8 +74,8 @@ class UserRepo {
         totalCount = (raw.total as number) || userList.length;
       }
 
-      onSuccess(userList, totalCount);
-      return { users: userList, total: totalCount };
+      onSuccess(userList, totalCount, meta);
+      return { users: userList, total: totalCount, meta };
     } catch (error) {
       const message = handleApiError(error, 'Failed to fetch users list');
       onError(message);
@@ -97,12 +96,12 @@ class UserRepo {
     onError: (message: string) => void;
   }): Promise<User | undefined> {
     try {
-      const response = await clientApi.get<ApiResponse<User> | User>(`/users/${id}`);
+      const response = await clientApi.get<GetUserResponse | User>(`/users/${id}`);
 
       const user =
-        (response as ApiResponse<User>)?.data &&
-        typeof (response as ApiResponse<User>).data === 'object'
-          ? (response as ApiResponse<User>).data
+        (response as BaseApiResponse<User>)?.data &&
+        typeof (response as BaseApiResponse<User>).data === 'object'
+          ? (response as BaseApiResponse<User>).data
           : (response as User);
 
       if (!user) {
@@ -132,12 +131,12 @@ class UserRepo {
   }): Promise<User | undefined> {
     try {
       const sanitized = cleanPayload(data as unknown as Record<string, unknown>);
-      const response = await clientApi.post<ApiResponse<User> | User>('/users', sanitized);
+      const response = await clientApi.post<GetUserResponse | User>('/users', sanitized);
 
       const user =
-        (response as ApiResponse<User>)?.data &&
-        typeof (response as ApiResponse<User>).data === 'object'
-          ? (response as ApiResponse<User>).data
+        (response as BaseApiResponse<User>)?.data &&
+        typeof (response as BaseApiResponse<User>).data === 'object'
+          ? (response as BaseApiResponse<User>).data
           : (response as User);
 
       onSuccess(user);
@@ -166,15 +165,15 @@ class UserRepo {
     try {
       const sanitized = cleanPayload(data as unknown as Record<string, unknown>);
       // Try PATCH first, standard for partial resource updates
-      const response = await clientApi.patch<ApiResponse<User> | User>(
+      const response = await clientApi.patch<GetUserResponse | User>(
         `/users/${id}`,
         sanitized,
       );
 
       const user =
-        (response as ApiResponse<User>)?.data &&
-        typeof (response as ApiResponse<User>).data === 'object'
-          ? (response as ApiResponse<User>).data
+        (response as BaseApiResponse<User>)?.data &&
+        typeof (response as BaseApiResponse<User>).data === 'object'
+          ? (response as BaseApiResponse<User>).data
           : (response as User);
 
       onSuccess(user);
@@ -199,7 +198,7 @@ class UserRepo {
     onError: (message: string) => void;
   }): Promise<boolean> {
     try {
-      await clientApi.delete(`/users/${id}`);
+      await clientApi.delete<BaseApiResponse<null> | void>(`/users/${id}`);
       onSuccess();
       return true;
     } catch (error) {

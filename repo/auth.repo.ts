@@ -1,9 +1,10 @@
 import {
-  ApiResponse,
   AuthResponseData,
   isAllowedDashboardRole,
   LoginInput,
+  LoginResponse,
 } from '@/types/auth.types';
+import { BaseApiResponse } from '@/types/base.types';
 import { serverApi } from '@/lib/api/server-api';
 import { handleApiError } from '@/lib/utils';
 
@@ -23,15 +24,16 @@ class AuthRepo {
     onError: (message: string) => void;
   }): Promise<AuthResponseData | undefined> {
     try {
-      const response = await serverApi.post<
-        ApiResponse<AuthResponseData> | AuthResponseData
-      >('/auth/login', credentials);
+      const response = await serverApi.post<LoginResponse | AuthResponseData>(
+        '/auth/login',
+        credentials
+      );
 
-      // Normalize response whether backend wrapped in ApiResponse or returned directly
+      // Normalize response whether backend wrapped in BaseApiResponse or returned directly
       const authData: AuthResponseData =
-        (response as ApiResponse<AuthResponseData>)?.data?.user &&
-        (response as ApiResponse<AuthResponseData>)?.data?.tokens
-          ? (response as ApiResponse<AuthResponseData>).data
+        (response as BaseApiResponse<AuthResponseData>)?.data?.user &&
+        (response as BaseApiResponse<AuthResponseData>)?.data?.tokens
+          ? (response as BaseApiResponse<AuthResponseData>).data
           : (response as AuthResponseData);
 
       if (!authData?.user || !authData?.tokens) {
