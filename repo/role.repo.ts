@@ -27,16 +27,22 @@ class RoleRepo {
    */
   async listRoles({
     query,
+    cacheTtlMs = 60000,
+    bypassCache = false,
     onSuccess,
     onError,
   }: {
     query?: RoleQuery;
+    cacheTtlMs?: number;
+    bypassCache?: boolean;
     onSuccess: (roles: Role[], total?: number, meta?: PaginationMeta) => void;
     onError: (message: string) => void;
   }): Promise<{ roles: Role[]; total: number; meta?: PaginationMeta } | undefined> {
     try {
       const response = await clientApi.get<GetPaginatedRolesResponse | Role[]>('/roles', {
         params: query,
+        cacheTtlMs,
+        bypassCache,
       });
 
       let roleList: Role[] = [];

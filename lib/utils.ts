@@ -14,8 +14,19 @@ export function handleApiError(
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
 
-    // Nested API response message (e.g. Axios or structured error payload)
+    // Handle HTTP 429 (Too Many Requests / Rate Limiting)
     const response = err.response as Record<string, unknown> | undefined;
+    const status = response?.status as number | undefined;
+    if (status === 429) {
+      const responseData = response?.data as Record<string, unknown> | undefined;
+      const rateLimitMsg =
+        responseData?.message ||
+        responseData?.error ||
+        "Too many requests. Please wait a few moments before trying again.";
+      return String(rateLimitMsg);
+    }
+
+    // Nested API response message (e.g. Axios or structured error payload)
     const responseData = response?.data as Record<string, unknown> | undefined;
 
     if (responseData?.message) {

@@ -5,6 +5,7 @@ import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout"
 import { RolesTable } from "@/components/roles/roles-table";
 import { PermissionsCatalogView } from "@/components/roles/permissions-catalog-view";
 import { KeyRound, ShieldCheck } from "lucide-react";
+import { cn } from "cn";
 
 export default function RolesPage() {
   const [activeTab, setActiveTab] = React.useState<"roles" | "permissions">("roles");
@@ -14,37 +15,41 @@ export default function RolesPage() {
       <div className="w-full max-w-7xl mx-auto space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-0.5">
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight">Roles & Permissions</h1>
-            <p className="text-xs text-muted-foreground">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Roles & Permissions
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Manage platform role definitions, privilege hierarchies, and granular authorization policies.
             </p>
           </div>
 
-          {/* Navigation Pill Tabs */}
-          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg self-start sm:self-auto border border-border/50 shrink-0">
+          {/* Navigation Pill Tabs - Modern Crisp Segmented Toggle */}
+          <div className="flex items-center gap-1 bg-muted/80 p-1 rounded-xl self-start sm:self-auto border border-border/70 shadow-2xs shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab("roles")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={cn(
+                "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer",
                 activeTab === "roles"
-                  ? "bg-background text-foreground shadow-xs"
+                  ? "bg-background text-foreground shadow-2xs font-bold"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              )}
             >
-              <ShieldCheck className="size-3.5" />
+              <ShieldCheck className={cn("size-3.5", activeTab === "roles" ? "text-primary" : "text-muted-foreground")} />
               <span>Roles Directory</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("permissions")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={cn(
+                "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer",
                 activeTab === "permissions"
-                  ? "bg-background text-foreground shadow-xs"
+                  ? "bg-background text-foreground shadow-2xs font-bold"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              )}
             >
-              <KeyRound className="size-3.5" />
+              <KeyRound className={cn("size-3.5", activeTab === "permissions" ? "text-primary" : "text-muted-foreground")} />
               <span>Permissions Matrix</span>
             </button>
           </div>
@@ -60,3 +65,4 @@ export default function RolesPage() {
     </DashboardLayoutWrapper>
   );
 }
+

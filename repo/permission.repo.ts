@@ -16,17 +16,19 @@ class PermissionRepo {
    */
   async listPermissions({
     query,
+    cacheTtlMs = 60000,
     onSuccess,
     onError,
   }: {
     query?: ListPermissionsQuery;
+    cacheTtlMs?: number;
     onSuccess: (permissions: PermissionDefinition[]) => void;
     onError: (message: string) => void;
   }): Promise<PermissionDefinition[] | undefined> {
     try {
       const response = await clientApi.get<GetPermissionsResponse | PermissionDefinition[]>(
         '/permissions',
-        { params: query },
+        { params: query, cacheTtlMs },
       );
 
       let items: PermissionDefinition[] = [];
@@ -52,10 +54,12 @@ class PermissionRepo {
    */
   async listGroupedPermissions({
     query,
+    cacheTtlMs = 60000,
     onSuccess,
     onError,
   }: {
     query?: Omit<ListPermissionsQuery, 'grouped'>;
+    cacheTtlMs?: number;
     onSuccess: (grouped: GroupedPermissions) => void;
     onError: (message: string) => void;
   }): Promise<GroupedPermissions | undefined> {
@@ -64,6 +68,7 @@ class PermissionRepo {
         GetGroupedPermissionsResponse | GroupedPermissions
       >('/permissions', {
         params: { ...query, grouped: true },
+        cacheTtlMs,
       });
 
       let grouped: GroupedPermissions = {};

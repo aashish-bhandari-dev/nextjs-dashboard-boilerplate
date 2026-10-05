@@ -47,7 +47,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CreateUserInput, UpdateUserInput, User } from "@/types/user.types";
+import { Role } from "@/types/role.types";
 import { userRepo } from "@/repo/user.repo";
+import { roleRepo } from "@/repo/role.repo";
 import { toastr } from "@/components/ui/toaster";
 import { userFormSchema } from "@/schemas";
 
@@ -62,13 +64,6 @@ interface MetadataField {
   key: string;
   value: string;
 }
-
-const AVAILABLE_ROLES = [
-  { value: "ADMIN", label: "Admin - Platform Management" },
-  { value: "SUPER_ADMIN", label: "Super Admin - Unrestricted Access" },
-  { value: "USER", label: "Standard User - Limited Access" },
-  { value: "MANAGER", label: "Manager - Operational Access" },
-];
 
 const AUTH_PROVIDERS = [
   { value: "LOCAL", label: "Local (Email / Password)" },
@@ -144,6 +139,10 @@ export function UserForm({ initialData, userId, isEdit = false }: UserFormProps)
     return [];
   });
 
+  // Dynamic roles state fetched from API
+  const [roles, setRoles] = React.useState<Role[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = React.useState(true);
+
   const [isLoadingUser, setIsLoadingUser] = React.useState(isEdit && !initialData);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
@@ -207,6 +206,21 @@ export function UserForm({ initialData, userId, isEdit = false }: UserFormProps)
       });
     }
   }, [isEdit, userId, initialData]);
+
+  // Fetch roles dynamically from API
+  React.useEffect(() => {
+    roleRepo.listRoles({
+      query: { limit: 100 },
+      onSuccess: (data) => {
+        setRoles(data);
+        setIsLoadingRoles(false);
+      },
+      onError: (err) => {
+        console.error("Failed to load roles for user form:", err);
+        setIsLoadingRoles(false);
+      },
+    });
+  }, []);
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -932,25 +946,55 @@ export function UserForm({ initialData, userId, isEdit = false }: UserFormProps)
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Role Select */}
               <div className="space-y-1.5">
-                <Label htmlFor="role" className="text-xs">
-                  Assigned Role <span className="text-destructive">*</span>
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="role" className="text-xs">
+                    Assigned Role <span className="text-destructive">*</span>
+                  </Label>
+                  {isLoadingRoles && (
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Loader2 className="size-3 animate-spin text-muted-foreground" />
+                      Loading roles...
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <select
                     id="role"
                     value={formData.role}
                     onChange={(e) => handleChange("role", e.target.value)}
-                    disabled={isSubmitting}
-                    className="h-9 w-full appearance-none rounded-md border border-input bg-background pl-3 pr-8 text-xs outline-none focus:border-ring focus:ring-1 focus:ring-ring cursor-pointer"
+                    disabled={isSubmitting || isLoadingRoles}
+                    className="h-9 w-full appearance-none rounded-md border border-input bg-background pl-3 pr-8 text-xs outline-none focus:border-ring focus:ring-1 focus:ring-ring cursor-pointer disabled:opacity-60"
                   >
-                    {AVAILABLE_ROLES.map((r) => (
-                      <option key={r.value} value={r.value}>
-                        {r.label}
+                    {roles.length > 0 ? (
+                      <>
+                        {formData.role && !roles.some((r) => r.name === formData.role) && (
+                          <option value={formData.role}>{formData.role}</option>
+                        )}
+                        {roles.map((r) => (
+                          <option key={r.id || r.name} value={r.name}>
+                            {r.displayName ? `${r.displayName} (${r.name})` : r.name}
+                          </option>
+                        ))}
+                      </>
+                    ) : (
+                      <option value={formData.role || "USER"}>
+                        {formData.role || "USER"}
                       </option>
-                    ))}
+                    )}
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 </div>
+                {(() => {
+                  const currentRole = roles.find((r) => r.name === formData.role);
+                  if (currentRole?.description) {
+                    return (
+                      <p className="text-[11px] text-muted-foreground">
+                        {currentRole.description}
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
               {/* Provider Select */}

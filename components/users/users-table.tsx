@@ -4,16 +4,20 @@ import * as React from "react";
 import Link from "next/link";
 import {
   AlertCircle,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Copy,
   Edit,
   Eye,
   Filter,
+  Globe,
   Loader2,
+  Mail,
   MoreHorizontal,
   Plus,
   RefreshCw,
@@ -21,7 +25,10 @@ import {
   Search,
   Shield,
   Trash2,
+  UserCheck,
+  Users as UsersIcon,
   UserX,
+  X,
   XCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -47,7 +54,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, UserQuery } from "@/types/user.types";
+import { Role } from "@/types/role.types";
 import { userRepo } from "@/repo/user.repo";
+import { roleRepo } from "@/repo/role.repo";
 import { DeleteUserModal } from "@/components/users/delete-user-modal";
 import { toastr } from "@/components/ui/toaster";
 
@@ -57,22 +66,43 @@ export function UsersTable() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
+  // Dynamic roles state fetched from API
+  const [availableRoles, setAvailableRoles] = React.useState<Role[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = React.useState(true);
+
   // Pagination states
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
 
   // Filters matching backend schema
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = React.useState("");
   const [selectedRole, setSelectedRole] = React.useState("ALL");
   const [selectedProvider, setSelectedProvider] = React.useState("ALL");
   const [selectedStatus, setSelectedStatus] = React.useState("ALL");
   const [selectedEmailVerified, setSelectedEmailVerified] = React.useState("ALL");
+
+  // Debounce search input to avoid hitting backend rate limit on keystrokes
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim());
+    }, 450);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   // Delete modal state
   const [userToDelete, setUserToDelete] = React.useState<User | null>(null);
 
   // Status toggle loading state
   const [updatingUserId, setUpdatingUserId] = React.useState<string | null>(null);
+  const [copiedId, setCopiedId] = React.useState<string | null>(null);
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    toastr.success("Copied to clipboard");
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const handleToggleStatus = async (userId: string, nextStatus: boolean) => {
     setUpdatingUserId(userId);
@@ -114,6 +144,7 @@ export function UsersTable() {
 
   const resetFilters = () => {
     setSearchTerm("");
+    setDebouncedSearchTerm("");
     setSelectedRole("ALL");
     setSelectedProvider("ALL");
     setSelectedStatus("ALL");
@@ -128,7 +159,7 @@ export function UsersTable() {
     const query: UserQuery = {
       page,
       limit,
-      searchTerm: searchTerm.trim() || undefined,
+      searchTerm: debouncedSearchTerm || undefined,
       role: selectedRole !== "ALL" ? selectedRole : undefined,
       provider: selectedProvider !== "ALL" ? selectedProvider : undefined,
     };
@@ -151,30 +182,51 @@ export function UsersTable() {
         setIsLoading(false);
       },
     });
-  }, [page, limit, searchTerm, selectedRole, selectedProvider, selectedStatus, selectedEmailVerified]);
+  }, [page, limit, debouncedSearchTerm, selectedRole, selectedProvider, selectedStatus, selectedEmailVerified]);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchUsers();
-    }, 300);
-    return () => clearTimeout(timer);
+    let isSubscribed = true;
+    (async () => {
+      if (isSubscribed) {
+        await fetchUsers();
+      }
+    })();
+    return () => {
+      isSubscribed = false;
+    };
   }, [fetchUsers]);
+
+  // Fetch roles dynamically from API for roles filter
+  React.useEffect(() => {
+    roleRepo.listRoles({
+      query: { limit: 100 },
+      onSuccess: (data) => {
+        setAvailableRoles(data);
+        setIsLoadingRoles(false);
+      },
+      onError: (msg) => {
+        console.error("Failed to load roles for filter:", msg);
+        setIsLoadingRoles(false);
+      },
+    });
+  }, []);
 
   const handleUserDeleted = (deletedId: string) => {
     setUsers((prev) => prev.filter((u) => u.id !== deletedId));
     setTotalCount((prev) => Math.max(0, prev - 1));
   };
 
+  // Modern crisp role badge styling with subtle borders & vibrant tints
   const getRoleBadgeVariant = (role: string) => {
     switch (role?.toUpperCase()) {
       case "SUPER_ADMIN":
-        return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30";
+        return "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30";
       case "ADMIN":
-        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30";
+        return "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30";
       case "MANAGER":
-        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30";
+        return "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30";
       default:
-        return "bg-muted text-muted-foreground border-border";
+        return "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20";
     }
   };
 
@@ -182,103 +234,203 @@ export function UsersTable() {
   const from = totalCount === 0 ? 0 : (page - 1) * limit + 1;
   const to = Math.min(totalCount, page * limit);
 
+  // Quick statistics calculated from current loaded dataset
+  const activeCount = users.filter((u) => u.isActive).length;
+  const verifiedCount = users.filter((u) => u.isEmailVerified).length;
+  const privilegedCount = users.filter((u) => {
+    const r = typeof u.role === "object" && u.role ? (u.role as { name: string }).name : String(u.role || "");
+    return ["ADMIN", "SUPER_ADMIN", "MANAGER"].includes(r.toUpperCase());
+  }).length;
+
   return (
-    <div className="space-y-4">
-      {/* Header: Title & Description on Left, Action Buttons on Right */}
+    <div className="space-y-5">
+      {/* Page Header: Title, Description & Action Buttons */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-0.5">
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight">User Management</h1>
-          <p className="text-xs text-muted-foreground">
-            Manage registered accounts, assigned roles, and platform access permissions.
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              User Directory
+            </h1>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Manage authenticated accounts, assigned roles, security credentials, and access statuses.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => fetchUsers()}
-            title="Refresh List"
-            className="h-9 px-3 gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground shrink-0 rounded-lg shadow-xs"
+            title="Refresh Directory"
+            className="h-9 px-3 gap-1.5 text-xs font-medium rounded-lg border-border/80 hover:bg-muted/60 transition-colors shadow-2xs"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={cn("size-3.5", isLoading && "animate-spin")} />
             <span>Refresh</span>
           </Button>
 
           <Link href="/users/create">
-            <Button size="sm" className="gap-1.5 h-9 text-xs font-semibold rounded-lg shadow-xs">
-              <Plus className="h-3.5 w-3.5" />
+            <Button size="sm" className="gap-1.5 h-9 px-3.5 text-xs font-semibold rounded-lg shadow-sm">
+              <Plus className="size-3.5 stroke-[2.5]" />
               <span>Add New User</span>
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* Search & Filter Toolbar - Single Clean Row */}
-      <div className="rounded-xl border bg-card/60 p-2.5 sm:p-3 shadow-xs">
-        <div className="flex flex-wrap items-center gap-2">
+      {/* Modern Metrics Overview Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs hover:border-border transition-all flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              Total Accounts
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold tracking-tight text-foreground">{totalCount}</span>
+              <span className="text-[11px] text-muted-foreground">registered</span>
+            </div>
+          </div>
+          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <UsersIcon className="size-5" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs hover:border-border transition-all flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              Active Status
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                {isLoading ? "—" : activeCount}
+              </span>
+              <span className="text-[11px] text-muted-foreground">in current page</span>
+            </div>
+          </div>
+          <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <UserCheck className="size-5" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs hover:border-border transition-all flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              Email Verified
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold tracking-tight text-foreground">
+                {isLoading ? "—" : verifiedCount}
+              </span>
+              <span className="text-[11px] text-muted-foreground">verified</span>
+            </div>
+          </div>
+          <div className="size-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <Mail className="size-5" />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs hover:border-border transition-all flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              Staff & Admins
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold tracking-tight text-foreground">
+                {isLoading ? "—" : privilegedCount}
+              </span>
+              <span className="text-[11px] text-muted-foreground">privileged</span>
+            </div>
+          </div>
+          <div className="size-10 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+            <Shield className="size-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Search & Filter Toolbar - Clean Deck */}
+      <div className="rounded-xl border border-border/70 bg-card/80 backdrop-blur-xs p-3 shadow-2xs space-y-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Search Input */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
             <Input
-              placeholder="Search by name, email, phone, or username..."
+              placeholder="Search by name, email, username, or phone..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setPage(1);
               }}
-              className="h-9 pl-9 pr-3 text-xs bg-background/80 border-input/80 rounded-lg shadow-none focus-visible:ring-1"
+              className="h-9 pl-9 pr-8 text-xs bg-background/90 border-input/80 rounded-lg shadow-none focus-visible:ring-1 focus-visible:ring-ring"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm("");
+                  setPage(1);
+                }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground hover:text-foreground flex items-center justify-center"
+                title="Clear search"
+              >
+                <X className="size-3" />
+              </button>
+            )}
           </div>
 
-          <div className="hidden lg:block h-4 w-px bg-border/80 mx-0.5 shrink-0" />
+          <div className="hidden lg:block h-5 w-px bg-border/70 mx-0.5 shrink-0" />
 
-          {/* Filter Prefix */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground shrink-0 select-none">
-            <Filter className="h-3.5 w-3.5" />
-            <span>Filter :</span>
-          </div>
-
-          {/* Role Filter */}
+          {/* Dynamic Role Filter */}
           <div className="relative shrink-0">
+            <div className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+              {isLoadingRoles ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Shield className="size-3.5" />
+              )}
+            </div>
             <select
               value={selectedRole}
               onChange={(e) => {
                 setSelectedRole(e.target.value);
                 setPage(1);
               }}
-              className="h-9 appearance-none rounded-lg border border-input/70 bg-background/70 pl-3 pr-8 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-colors hover:bg-accent/40 cursor-pointer"
+              disabled={isLoadingRoles}
+              className="h-9 appearance-none rounded-lg border border-input/80 bg-background/90 pl-8 pr-8 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-colors hover:bg-accent/40 cursor-pointer font-medium disabled:opacity-60"
             >
-              <option value="ALL">Role: All</option>
-              <option value="SUPER_ADMIN">Role: Super Admin</option>
-              <option value="ADMIN">Role: Admin</option>
-              <option value="MANAGER">Role: Manager</option>
-              <option value="USER">Role: User</option>
+              <option value="ALL">All Roles</option>
+              {availableRoles.map((role) => (
+                <option key={role.id || role.name} value={role.name}>
+                  {role.displayName || role.name}
+                </option>
+              ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
           </div>
 
           {/* Provider Filter */}
           <div className="relative shrink-0">
+            <div className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <Globe className="size-3.5" />
+            </div>
             <select
               value={selectedProvider}
               onChange={(e) => {
                 setSelectedProvider(e.target.value);
                 setPage(1);
               }}
-              className="h-9 appearance-none rounded-lg border border-input/70 bg-background/70 pl-3 pr-8 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-colors hover:bg-accent/40 cursor-pointer"
+              className="h-9 appearance-none rounded-lg border border-input/80 bg-background/90 pl-8 pr-8 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-colors hover:bg-accent/40 cursor-pointer font-medium"
             >
-              <option value="ALL">Provider: All</option>
-              <option value="LOCAL">Provider: Local</option>
-              <option value="GOOGLE">Provider: Google</option>
-              <option value="APPLE">Provider: Apple</option>
-              <option value="GITHUB">Provider: GitHub</option>
-              <option value="FACEBOOK">Provider: Facebook</option>
+              <option value="ALL">All Providers</option>
+              <option value="LOCAL">Local Email</option>
+              <option value="GOOGLE">Google</option>
+              <option value="APPLE">Apple</option>
+              <option value="GITHUB">GitHub</option>
+              <option value="FACEBOOK">Facebook</option>
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
           </div>
 
-          {/* Account Status Filter */}
+          {/* Status Filter */}
           <div className="relative shrink-0">
             <select
               value={selectedStatus}
@@ -286,13 +438,13 @@ export function UsersTable() {
                 setSelectedStatus(e.target.value);
                 setPage(1);
               }}
-              className="h-9 appearance-none rounded-lg border border-input/70 bg-background/70 pl-3 pr-8 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-colors hover:bg-accent/40 cursor-pointer"
+              className="h-9 appearance-none rounded-lg border border-input/80 bg-background/90 pl-3 pr-8 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-colors hover:bg-accent/40 cursor-pointer font-medium"
             >
               <option value="ALL">Status: All</option>
-              <option value="ACTIVE">Status: Active</option>
-              <option value="INACTIVE">Status: Inactive</option>
+              <option value="ACTIVE">Active Only</option>
+              <option value="INACTIVE">Inactive Only</option>
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
           </div>
 
           {/* Email Verification Filter */}
@@ -303,57 +455,154 @@ export function UsersTable() {
                 setSelectedEmailVerified(e.target.value);
                 setPage(1);
               }}
-              className="h-9 appearance-none rounded-lg border border-input/70 bg-background/70 pl-3 pr-8 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-colors hover:bg-accent/40 cursor-pointer"
+              className="h-9 appearance-none rounded-lg border border-input/80 bg-background/90 pl-3 pr-8 text-xs text-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-colors hover:bg-accent/40 cursor-pointer font-medium"
             >
               <option value="ALL">Email: All</option>
-              <option value="VERIFIED">Email: Verified</option>
-              <option value="UNVERIFIED">Email: Unverified</option>
+              <option value="VERIFIED">Verified</option>
+              <option value="UNVERIFIED">Unverified</option>
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
           </div>
-
-          {/* Always Visible Reset Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={resetFilters}
-            disabled={!hasActiveFilters}
-            className="h-9 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1.5 rounded-lg border-dashed transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-            title="Reset all filters"
-          >
-            <RotateCcw className="h-3 w-3" />
-            <span>Reset filters</span>
-          </Button>
         </div>
+
+        {/* Active Filter Chips & Reset Row */}
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-border/50 text-[11px]">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-muted-foreground font-medium flex items-center gap-1 select-none">
+                <Filter className="size-3" /> Active filters:
+              </span>
+
+              {searchTerm && (
+                <Badge variant="secondary" className="gap-1.5 rounded-md py-0.5 px-2 text-[11px] font-normal border border-border/50">
+                  <span>Keyword: &quot;{searchTerm}&quot;</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setPage(1);
+                    }}
+                    className="inline-flex items-center justify-center size-3.5 rounded-full hover:bg-foreground/15 text-muted-foreground hover:text-foreground transition-colors cursor-pointer pointer-events-auto shrink-0"
+                    aria-label="Remove search filter"
+                  >
+                    <X className="size-2.5 stroke-[2.5]" />
+                  </button>
+                </Badge>
+              )}
+
+              {selectedRole !== "ALL" && (
+                <Badge variant="secondary" className="gap-1.5 rounded-md py-0.5 px-2 text-[11px] font-normal border border-border/50">
+                  <span>
+                    Role: {availableRoles.find((r) => r.name === selectedRole)?.displayName || selectedRole}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedRole("ALL");
+                      setPage(1);
+                    }}
+                    className="inline-flex items-center justify-center size-3.5 rounded-full hover:bg-foreground/15 text-muted-foreground hover:text-foreground transition-colors cursor-pointer pointer-events-auto shrink-0"
+                    aria-label="Remove role filter"
+                  >
+                    <X className="size-2.5 stroke-[2.5]" />
+                  </button>
+                </Badge>
+              )}
+
+              {selectedProvider !== "ALL" && (
+                <Badge variant="secondary" className="gap-1.5 rounded-md py-0.5 px-2 text-[11px] font-normal border border-border/50">
+                  <span>Provider: {selectedProvider}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedProvider("ALL");
+                      setPage(1);
+                    }}
+                    className="inline-flex items-center justify-center size-3.5 rounded-full hover:bg-foreground/15 text-muted-foreground hover:text-foreground transition-colors cursor-pointer pointer-events-auto shrink-0"
+                    aria-label="Remove provider filter"
+                  >
+                    <X className="size-2.5 stroke-[2.5]" />
+                  </button>
+                </Badge>
+              )}
+
+              {selectedStatus !== "ALL" && (
+                <Badge variant="secondary" className="gap-1.5 rounded-md py-0.5 px-2 text-[11px] font-normal border border-border/50">
+                  <span>Status: {selectedStatus}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedStatus("ALL");
+                      setPage(1);
+                    }}
+                    className="inline-flex items-center justify-center size-3.5 rounded-full hover:bg-foreground/15 text-muted-foreground hover:text-foreground transition-colors cursor-pointer pointer-events-auto shrink-0"
+                    aria-label="Remove status filter"
+                  >
+                    <X className="size-2.5 stroke-[2.5]" />
+                  </button>
+                </Badge>
+              )}
+
+              {selectedEmailVerified !== "ALL" && (
+                <Badge variant="secondary" className="gap-1.5 rounded-md py-0.5 px-2 text-[11px] font-normal border border-border/50">
+                  <span>Email: {selectedEmailVerified}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedEmailVerified("ALL");
+                      setPage(1);
+                    }}
+                    className="inline-flex items-center justify-center size-3.5 rounded-full hover:bg-foreground/15 text-muted-foreground hover:text-foreground transition-colors cursor-pointer pointer-events-auto shrink-0"
+                    aria-label="Remove email verification filter"
+                  >
+                    <X className="size-2.5 stroke-[2.5]" />
+                  </button>
+                </Badge>
+              )}
+            </div>
+
+            {/* Reset Filters Button positioned on the right */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetFilters}
+              className="ml-auto h-6.5 px-2 text-[11px] text-muted-foreground hover:text-foreground gap-1.5 rounded-md border-dashed transition-colors shrink-0 cursor-pointer"
+              title="Reset all active filters"
+            >
+              <RotateCcw className="size-2.5" />
+              <span>Reset filters</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Error Notice */}
       {errorMessage && (
-        <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-          <AlertCircle className="h-4 w-4 shrink-0" />
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-destructive">
+          <AlertCircle className="size-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {/* Users Data Table */}
-      <div className="rounded-xl border bg-card shadow-xs overflow-hidden">
+      <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40 text-[11px]">
-              <TableHead className="w-[280px]">User Account</TableHead>
+            <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border/70 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <TableHead className="w-[300px]">User Account</TableHead>
               <TableHead>Email & Contact</TableHead>
-              <TableHead>Role & Privileges</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Joined Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Role & Access</TableHead>
+              <TableHead>Account Status</TableHead>
+              <TableHead>Joined</TableHead>
+              <TableHead className="text-right w-[120px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={6} className="h-14">
-                    <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+                  <TableCell colSpan={6} className="h-16">
+                    <div className="h-4 w-full animate-pulse rounded-md bg-muted/60" />
                   </TableCell>
                 </TableRow>
               ))
@@ -361,18 +610,31 @@ export function UsersTable() {
               <TableRow>
                 <TableCell
                   colSpan={6}
-                  className="h-48 text-center text-xs text-muted-foreground"
+                  className="h-56 text-center text-xs text-muted-foreground"
                 >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <UserX className="h-8 w-8 text-muted-foreground/60" />
-                    <span className="font-semibold text-foreground">
+                  <div className="flex flex-col items-center justify-center gap-2.5">
+                    <div className="size-12 rounded-2xl bg-muted/70 flex items-center justify-center text-muted-foreground">
+                      <UserX className="size-6" />
+                    </div>
+                    <span className="font-semibold text-sm text-foreground">
                       No user accounts found
                     </span>
-                    <p className="text-[11px] max-w-sm">
-                      {searchTerm
-                        ? "No results matched your search query. Try adjusting your filters."
-                        : "No user records exist yet. Click 'Add New User' to create the first one."}
+                    <p className="text-xs text-muted-foreground max-w-sm">
+                      {hasActiveFilters
+                        ? "No results matched your active filters. Try clearing or broadening your search criteria."
+                        : "There are currently no users registered in the platform."}
                     </p>
+                    {hasActiveFilters && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetFilters}
+                        className="mt-1 h-8 text-xs gap-1.5"
+                      >
+                        <RotateCcw className="size-3" />
+                        <span>Clear All Filters</span>
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -395,121 +657,144 @@ export function UsersTable() {
                   : "—";
 
                 return (
-                  <TableRow key={u.id} className="text-xs hover:bg-muted/30">
+                  <TableRow
+                    key={u.id}
+                    className="text-xs hover:bg-accent/40 transition-colors group"
+                  >
                     {/* User Identity Column */}
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar className="size-8 shrink-0 border">
-                          {u.image ? (
-                            <AvatarImage src={u.image} alt={u.fullName || u.firstName} />
-                          ) : null}
-                          <AvatarFallback className="bg-primary/10 text-primary font-bold text-[11px]">
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col leading-tight min-w-0">
+                        <div className="relative shrink-0">
+                          <Avatar className="size-9 rounded-full ring-1 ring-border/60 shadow-2xs">
+                            {u.image ? (
+                              <AvatarImage
+                                src={u.image}
+                                alt={u.fullName || u.firstName}
+                                className="object-cover"
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          {/* Live status dot */}
+                          <span
+                            className={cn(
+                              "absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-card",
+                              u.isActive ? "bg-emerald-500" : "bg-muted-foreground/40"
+                            )}
+                            title={u.isActive ? "Active Account" : "Inactive Account"}
+                          />
+                        </div>
+
+                        <div className="flex flex-col min-w-0">
                           <Link
                             href={`/users/${u.id}`}
-                            className="font-semibold hover:underline truncate text-foreground"
+                            className="font-semibold text-foreground hover:text-primary hover:underline transition-colors truncate text-xs"
                           >
-                            {u.fullName || u.firstName}
+                            {u.fullName || `${u.firstName} ${u.lastName || ""}`.trim()}
                           </Link>
-                          <span className="text-[11px] text-muted-foreground truncate">
+                          <span className="text-[11px] font-mono text-muted-foreground truncate">
                             @{u.username || "no-username"}
                           </span>
                         </div>
                       </div>
                     </TableCell>
 
-                    {/* Email & Phone */}
+                    {/* Email & Contact */}
                     <TableCell>
-                      <div className="flex flex-col leading-tight">
+                      <div className="flex flex-col">
                         <div className="flex items-center gap-1.5">
-                          <span className="truncate text-foreground font-medium">
+                          <span className="truncate text-foreground font-medium text-xs">
                             {u.email}
                           </span>
-                          {u.isEmailVerified && (
-                            <span title="Email Verified" className="text-emerald-500 shrink-0">
-                              <CheckCircle2 className="size-3" />
+                          {u.isEmailVerified ? (
+                            <span title="Verified Email" className="text-emerald-500 shrink-0">
+                              <CheckCircle2 className="size-3.5" />
+                            </span>
+                          ) : (
+                            <span title="Unverified Email" className="text-muted-foreground/50 shrink-0">
+                              <XCircle className="size-3.5" />
                             </span>
                           )}
                         </div>
-                        <span className="text-[11px] text-muted-foreground">
-                          {u.phone || "No phone"}
+                        <span className="text-[11px] text-muted-foreground truncate">
+                          {u.phone || "No phone linked"}
                         </span>
                       </div>
                     </TableCell>
 
                     {/* Role */}
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] px-2 py-0.5 font-bold ${getRoleBadgeVariant(
-                          roleString
-                        )}`}
-                      >
-                        <Shield className="mr-1 h-3 w-3 inline" />
-                        {roleString}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider",
+                            getRoleBadgeVariant(roleString)
+                          )}
+                        >
+                          <Shield className="mr-1 size-2.5 inline" />
+                          {roleString}
+                        </Badge>
+                      </div>
                     </TableCell>
 
                     {/* Account Status with Inline Toggle */}
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={u.isActive}
-                            disabled={updatingUserId === u.id}
-                            onCheckedChange={(checked) => handleToggleStatus(u.id, checked)}
-                            aria-label={`Toggle active status for ${u.fullName || u.firstName}`}
-                          />
-                          <span
-                            className={cn(
-                              "text-[11px] font-medium transition-colors select-none flex items-center gap-1 min-w-[42px]",
-                              u.isActive
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-muted-foreground"
-                            )}
-                          >
-                            {updatingUserId === u.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground shrink-0" />
-                            ) : null}
-                            <span>{u.isActive ? "Active" : "Inactive"}</span>
-                          </span>
-                        </div>
-
-                        {u.isActive ? (
-                          <span
-                            title="Active"
-                            className="text-emerald-500 shrink-0"
-                          >
-                            <CheckCircle2 className="size-3.5" />
-                          </span>
-                        ) : (
-                          <span
-                            title="Inactive"
-                            className="text-red-500 dark:text-red-400 shrink-0"
-                          >
-                            <XCircle className="size-3.5" />
-                          </span>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={u.isActive}
+                          disabled={updatingUserId === u.id}
+                          onCheckedChange={(checked) => handleToggleStatus(u.id, checked)}
+                          aria-label={`Toggle active status for ${u.fullName || u.firstName}`}
+                        />
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 text-[11px] font-medium transition-colors select-none",
+                            u.isActive
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          {updatingUserId === u.id ? (
+                            <Loader2 className="size-3 animate-spin text-muted-foreground shrink-0" />
+                          ) : (
+                            <span
+                              className={cn(
+                                "size-1.5 rounded-full shrink-0",
+                                u.isActive ? "bg-emerald-500" : "bg-muted-foreground/40"
+                              )}
+                            />
+                          )}
+                          <span>{u.isActive ? "Active" : "Inactive"}</span>
+                        </span>
                       </div>
                     </TableCell>
 
                     {/* Joined Date */}
-                    <TableCell className="text-muted-foreground text-[11px]">
+                    <TableCell className="text-muted-foreground text-[11px] whitespace-nowrap">
                       {joinedFormatted}
                     </TableCell>
 
-                    {/* Actions Dropdown / Shortcuts */}
+                    {/* Actions Column */}
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Link href={`/users/${u.id}/edit`}>
+                        <Link href={`/users/${u.id}`} title="View Details">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="size-7 text-muted-foreground hover:text-foreground"
-                            title="Edit User"
+                            className="size-7 text-muted-foreground hover:text-foreground rounded-md"
+                          >
+                            <Eye className="size-3.5" />
+                          </Button>
+                        </Link>
+
+                        <Link href={`/users/${u.id}/edit`} title="Edit Profile">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 text-muted-foreground hover:text-foreground rounded-md"
                           >
                             <Edit className="size-3.5" />
                           </Button>
@@ -517,33 +802,44 @@ export function UsersTable() {
 
                         <DropdownMenu>
                           <DropdownMenuTrigger
-                            className="size-7 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer outline-none"
-                            aria-label="Open menu"
+                            className="size-7 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer outline-none transition-colors"
+                            aria-label="More options"
                           >
                             <MoreHorizontal className="size-3.5" />
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40 text-xs">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuContent align="end" className="w-44 text-xs">
+                            <DropdownMenuLabel className="text-[11px]">User Options</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <Link href={`/users/${u.id}`}>
-                              <DropdownMenuItem className="cursor-pointer text-xs">
-                                <Eye className="mr-2 size-3.5" />
-                                <span>View Details</span>
+                              <DropdownMenuItem className="cursor-pointer text-xs gap-2">
+                                <Eye className="size-3.5 text-muted-foreground" />
+                                <span>View Profile</span>
                               </DropdownMenuItem>
                             </Link>
                             <Link href={`/users/${u.id}/edit`}>
-                              <DropdownMenuItem className="cursor-pointer text-xs">
-                                <Edit className="mr-2 size-3.5" />
-                                <span>Edit Profile</span>
+                              <DropdownMenuItem className="cursor-pointer text-xs gap-2">
+                                <Edit className="size-3.5 text-muted-foreground" />
+                                <span>Edit Account</span>
                               </DropdownMenuItem>
                             </Link>
+                            <DropdownMenuItem
+                              onClick={() => handleCopy(u.id, u.id)}
+                              className="cursor-pointer text-xs gap-2"
+                            >
+                              {copiedId === u.id ? (
+                                <Check className="size-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="size-3.5 text-muted-foreground" />
+                              )}
+                              <span>Copy User ID</span>
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => setUserToDelete(u)}
                               variant="destructive"
-                              className="cursor-pointer text-xs text-destructive focus:bg-destructive/10"
+                              className="cursor-pointer text-xs text-destructive focus:bg-destructive/10 gap-2"
                             >
-                              <Trash2 className="mr-2 size-3.5" />
+                              <Trash2 className="size-3.5" />
                               <span>Delete User</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -558,12 +854,13 @@ export function UsersTable() {
         </Table>
 
         {/* Table Footer with Pagination Controls */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t px-4 py-3 text-xs text-muted-foreground">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-border/70 px-4 py-3 bg-muted/20 text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <span>
-              Showing <strong>{from}</strong>–<strong>{to}</strong> of <strong>{totalCount}</strong> users
+              Showing <strong className="text-foreground">{from}</strong>–<strong className="text-foreground">{to}</strong> of{" "}
+              <strong className="text-foreground">{totalCount}</strong> users
             </span>
-            <div className="h-3 w-px bg-border hidden sm:block" />
+            <div className="h-3 w-px bg-border/80 hidden sm:block" />
             <div className="flex items-center gap-1.5">
               <span className="text-[11px]">Rows:</span>
               <div className="relative shrink-0">
@@ -573,14 +870,14 @@ export function UsersTable() {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="h-7 appearance-none rounded border border-input bg-card pl-2.5 pr-6 text-[11px] text-foreground outline-none focus:border-ring cursor-pointer"
+                  className="h-7 appearance-none rounded-md border border-input/80 bg-background pl-2 pr-6 text-[11px] text-foreground outline-none focus:border-ring cursor-pointer font-medium"
                 >
                   <option value={10}>10</option>
                   <option value={20}>20</option>
                   <option value={50}>50</option>
                   <option value={100}>100</option>
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
               </div>
             </div>
           </div>
@@ -595,9 +892,9 @@ export function UsersTable() {
               disabled={page <= 1 || isLoading}
               onClick={() => setPage(1)}
               title="First Page"
-              className="h-7 w-7 text-xs"
+              className="size-7 rounded-md"
             >
-              <ChevronsLeft className="h-3.5 w-3.5" />
+              <ChevronsLeft className="size-3.5" />
             </Button>
             <Button
               variant="outline"
@@ -605,9 +902,9 @@ export function UsersTable() {
               disabled={page <= 1 || isLoading}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               title="Previous Page"
-              className="h-7 w-7 text-xs"
+              className="size-7 rounded-md"
             >
-              <ChevronLeft className="h-3.5 w-3.5" />
+              <ChevronLeft className="size-3.5" />
             </Button>
             <Button
               variant="outline"
@@ -615,9 +912,9 @@ export function UsersTable() {
               disabled={page >= totalPages || isLoading}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               title="Next Page"
-              className="h-7 w-7 text-xs"
+              className="size-7 rounded-md"
             >
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="size-3.5" />
             </Button>
             <Button
               variant="outline"
@@ -625,9 +922,9 @@ export function UsersTable() {
               disabled={page >= totalPages || isLoading}
               onClick={() => setPage(totalPages)}
               title="Last Page"
-              className="h-7 w-7 text-xs"
+              className="size-7 rounded-md"
             >
-              <ChevronsRight className="h-3.5 w-3.5" />
+              <ChevronsRight className="size-3.5" />
             </Button>
           </div>
         </div>
@@ -643,3 +940,4 @@ export function UsersTable() {
     </div>
   );
 }
+
