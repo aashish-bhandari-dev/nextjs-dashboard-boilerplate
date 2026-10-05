@@ -68,12 +68,21 @@ export function DashboardSidebar() {
   return (
     <Sidebar collapsible="icon">
       {/* Brand Header */}
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link href="/" className="w-full">
-              <SidebarMenuButton size="lg" className="hover:bg-muted">
-                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-black text-xs tracking-wider shadow-sm">
+      <SidebarHeader className="group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
+        <SidebarMenu className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:items-center">
+          <SidebarMenuItem className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+            <Link
+              href="/"
+              className="w-full flex items-center group-data-[collapsible=icon]:justify-center"
+            >
+              {/* Collapsed view: Logo only, perfectly centered */}
+              <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center size-8 rounded-lg bg-primary text-primary-foreground font-black text-xs tracking-wider shadow-sm shrink-0">
+                AH
+              </div>
+
+              {/* Expanded view: Full menu button with logo and text */}
+              <SidebarMenuButton size="lg" className="hover:bg-muted group-data-[collapsible=icon]:hidden">
+                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-black text-xs tracking-wider shadow-sm shrink-0">
                   AH
                 </div>
                 <div className="grid flex-1 text-left text-xs leading-tight">
@@ -101,13 +110,16 @@ export function DashboardSidebar() {
 
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <Link href={item.href} className="w-full">
+                      <Link
+                        href={item.href}
+                        className="w-full flex items-center group-data-[collapsible=icon]:justify-center"
+                      >
                         <SidebarMenuButton
                           isActive={active}
                           tooltip={item.title}
                         >
                           <Icon className="size-4 shrink-0" />
-                          <span>{item.title}</span>
+                          <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                         </SidebarMenuButton>
                       </Link>
                     </SidebarMenuItem>

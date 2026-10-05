@@ -243,21 +243,24 @@ export function UsersTable() {
   }).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 min-w-0 max-w-full w-full">
       {/* Page Header: Title, Description & Action Buttons */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               User Directory
             </h1>
+            <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5 rounded-md">
+              {totalCount} {totalCount === 1 ? "user" : "users"}
+            </Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
             Manage authenticated accounts, assigned roles, security credentials, and access statuses.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
+        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -585,16 +588,16 @@ export function UsersTable() {
       )}
 
       {/* Users Data Table */}
-      <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+      <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs min-w-0 max-w-full w-full">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border/70 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-              <TableHead className="w-[300px]">User Account</TableHead>
-              <TableHead>Email & Contact</TableHead>
-              <TableHead>Role & Access</TableHead>
-              <TableHead>Account Status</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead className="text-right w-[120px]">Actions</TableHead>
+              <TableHead className="min-w-[220px] sm:min-w-[260px]">User Account</TableHead>
+              <TableHead className="min-w-[180px]">Email & Contact</TableHead>
+              <TableHead className="min-w-[140px]">Role & Access</TableHead>
+              <TableHead className="min-w-[150px]">Account Status</TableHead>
+              <TableHead className="min-w-[110px]">Joined</TableHead>
+              <TableHead className="text-right min-w-[90px] w-[110px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -854,9 +857,9 @@ export function UsersTable() {
         </Table>
 
         {/* Table Footer with Pagination Controls */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-border/70 px-4 py-3 bg-muted/20 text-xs text-muted-foreground">
-          <div className="flex items-center gap-3">
-            <span>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-border/70 px-3.5 sm:px-4 py-3 bg-muted/20 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <span className="text-[11px] sm:text-xs">
               Showing <strong className="text-foreground">{from}</strong>–<strong className="text-foreground">{to}</strong> of{" "}
               <strong className="text-foreground">{totalCount}</strong> users
             </span>
@@ -882,7 +885,7 @@ export function UsersTable() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 self-end sm:self-auto">
+          <div className="flex items-center gap-1.5 self-center sm:self-auto flex-wrap">
             <span className="text-[11px] mr-1">
               Page {page} of {totalPages}
             </span>

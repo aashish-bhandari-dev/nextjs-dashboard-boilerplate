@@ -147,7 +147,7 @@ export function RolesTable() {
   const to = Math.min(totalCount, page * limit);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 min-w-0 max-w-full w-full">
       {/* Modern Crisp Metrics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs hover:border-border transition-all flex items-center justify-between">
@@ -218,10 +218,10 @@ export function RolesTable() {
       </div>
 
       {/* Filter and Action Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card/80 backdrop-blur-xs border border-border/70 p-3 rounded-xl shadow-2xs">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card/80 backdrop-blur-xs border border-border/70 p-3 rounded-xl shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 min-w-0">
           {/* Search Box */}
-          <div className="relative flex-1 max-w-sm">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
             <Input
               placeholder="Search roles by title, code, or description..."
@@ -248,7 +248,7 @@ export function RolesTable() {
           </div>
 
           {/* Segmented Filter Pills */}
-          <div className="flex items-center gap-1 bg-muted/70 p-1 rounded-lg border border-border/60">
+          <div className="flex items-center gap-1 bg-muted/70 p-1 rounded-lg border border-border/60 overflow-x-auto scrollbar-none shrink-0">
             <button
               type="button"
               onClick={() => setRoleTypeFilter("ALL")}
@@ -335,16 +335,16 @@ export function RolesTable() {
       )}
 
       {/* Main Table Card */}
-      <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+      <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs min-w-0 max-w-full w-full">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border/70 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-              <TableHead className="w-[280px]">Role Definition</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-center">Hierarchy</TableHead>
-              <TableHead className="text-center">Assigned Users</TableHead>
-              <TableHead>Permissions Granted</TableHead>
-              <TableHead className="w-[120px] text-right">Actions</TableHead>
+              <TableHead className="min-w-[220px] sm:min-w-[260px]">Role Definition</TableHead>
+              <TableHead className="min-w-[100px]">Type</TableHead>
+              <TableHead className="text-center min-w-[90px]">Hierarchy</TableHead>
+              <TableHead className="text-center min-w-[110px]">Assigned Users</TableHead>
+              <TableHead className="min-w-[170px]">Permissions Granted</TableHead>
+              <TableHead className="min-w-[90px] w-[110px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -602,8 +602,8 @@ export function RolesTable() {
 
         {/* Pagination Controls */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 border-t border-border/70 bg-muted/20 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <span>Rows:</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] sm:text-xs">Rows:</span>
             <select
               value={limit}
               onChange={(e) => {
@@ -617,12 +617,12 @@ export function RolesTable() {
               <option value={20}>20</option>
               <option value={50}>50</option>
             </select>
-            <span className="ml-2">
+            <span className="text-[11px] sm:text-xs">
               Showing <strong>{from}</strong>–<strong>{to}</strong> of <strong>{totalCount}</strong> roles
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 self-center sm:self-auto flex-wrap">
             <span className="text-[11px] mr-1">
               Page {page} of {totalPages}
             </span>

@@ -272,23 +272,23 @@ export function PermissionsCatalogView({ roles }: PermissionsCatalogViewProps) {
         </div>
       ) : (
         /* Matrix View */
-        <Card className="shadow-2xs border-border/70 overflow-hidden">
+        <Card className="shadow-2xs border-border/70 overflow-hidden min-w-0 max-w-full w-full">
           <CardHeader className="p-4 sm:p-5 border-b border-border/70 bg-muted/20">
             <CardTitle className="text-sm sm:text-base font-bold">Permissions Authorization Matrix</CardTitle>
             <CardDescription className="text-xs">
               Overview of active privileges granted across system and custom roles
             </CardDescription>
           </CardHeader>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto min-w-0 max-w-full w-full">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border/70 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  <TableHead className="w-[300px]">Permission Definition</TableHead>
-                  <TableHead>Module</TableHead>
+                  <TableHead className="min-w-[220px] sm:min-w-[280px]">Permission Definition</TableHead>
+                  <TableHead className="min-w-[100px]">Module</TableHead>
                   {matrixRoles.map((r) => (
                     <TableHead
                       key={r.id}
-                      className="text-center whitespace-nowrap min-w-[110px]"
+                      className="text-center whitespace-nowrap min-w-[90px] sm:min-w-[110px]"
                     >
                       <div className="font-bold text-foreground">{r.displayName}</div>
                       <span className="text-[10px] font-mono text-muted-foreground">

@@ -15,7 +15,7 @@ export function DashboardLayoutWrapper({ children }: DashboardLayoutWrapperProps
       <DashboardSidebar />
       <SidebarInset>
         <DashboardTopbar />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 min-w-0 max-w-full">
           {children}
         </main>
       </SidebarInset>
