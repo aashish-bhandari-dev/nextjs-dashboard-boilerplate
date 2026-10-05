@@ -207,8 +207,110 @@ class UserRepo {
       return false;
     }
   }
+
+  /**
+   * Fetch effective permissions, role defaults, direct overrides, and catalog for a user
+   * GET /api/users/:id/permissions
+   */
+  async getUserPermissions({
+    userId,
+    onSuccess,
+    onError,
+  }: {
+    userId: string;
+    onSuccess: (data: import('@/types/permission.types').UserEffectivePermissionsResponse) => void;
+    onError: (message: string) => void;
+  }): Promise<import('@/types/permission.types').UserEffectivePermissionsResponse | undefined> {
+    try {
+      const response = await clientApi.get<
+        BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>
+      >(`/users/${userId}/permissions`);
+
+      const data =
+        (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>)?.data &&
+        typeof (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>).data === 'object'
+          ? (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>).data
+          : (response as unknown as import('@/types/permission.types').UserEffectivePermissionsResponse);
+
+      onSuccess(data);
+      return data;
+    } catch (error) {
+      const message = handleApiError(error, `Failed to fetch permissions for user ID: ${userId}`);
+      onError(message);
+      return undefined;
+    }
+  }
+
+  /**
+   * Update permissions or explicit overrides for a user
+   * PUT /api/users/:id/permissions
+   */
+  async updateUserPermissions({
+    userId,
+    data,
+    onSuccess,
+    onError,
+  }: {
+    userId: string;
+    data: import('@/types/permission.types').UpdateUserPermissionsInput;
+    onSuccess: (updated: import('@/types/permission.types').UserEffectivePermissionsResponse) => void;
+    onError: (message: string) => void;
+  }): Promise<import('@/types/permission.types').UserEffectivePermissionsResponse | undefined> {
+    try {
+      const response = await clientApi.put<
+        BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>
+      >(`/users/${userId}/permissions`, data);
+
+      const resData =
+        (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>)?.data &&
+        typeof (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>).data === 'object'
+          ? (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>).data
+          : (response as unknown as import('@/types/permission.types').UserEffectivePermissionsResponse);
+
+      onSuccess(resData);
+      return resData;
+    } catch (error) {
+      const message = handleApiError(error, `Failed to update permissions for user ID: ${userId}`);
+      onError(message);
+      return undefined;
+    }
+  }
+
+  /**
+   * Reset user's custom permissions back to default role permissions
+   * POST /api/users/:id/permissions/reset
+   */
+  async resetUserPermissions({
+    userId,
+    onSuccess,
+    onError,
+  }: {
+    userId: string;
+    onSuccess: (result: import('@/types/permission.types').UserEffectivePermissionsResponse) => void;
+    onError: (message: string) => void;
+  }): Promise<import('@/types/permission.types').UserEffectivePermissionsResponse | undefined> {
+    try {
+      const response = await clientApi.post<
+        BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>
+      >(`/users/${userId}/permissions/reset`, {});
+
+      const resData =
+        (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>)?.data &&
+        typeof (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>).data === 'object'
+          ? (response as BaseApiResponse<import('@/types/permission.types').UserEffectivePermissionsResponse>).data
+          : (response as unknown as import('@/types/permission.types').UserEffectivePermissionsResponse);
+
+      onSuccess(resData);
+      return resData;
+    } catch (error) {
+      const message = handleApiError(error, `Failed to reset permissions for user ID: ${userId}`);
+      onError(message);
+      return undefined;
+    }
+  }
 }
 
 export const userRepo = new UserRepo();
 export { UserRepo };
 export default userRepo;
+

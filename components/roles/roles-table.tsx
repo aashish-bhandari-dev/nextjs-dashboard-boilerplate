@@ -21,7 +21,6 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Unlock,
   Users,

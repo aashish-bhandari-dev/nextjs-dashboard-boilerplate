@@ -146,6 +146,12 @@ export function UserDetailsView({ userId }: UserDetailsViewProps) {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Link href={`/users/${user.id}/permissions`} className="flex-1 sm:flex-initial">
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs w-full sm:w-auto">
+              <KeyRound className="h-3.5 w-3.5 text-primary" />
+              <span>Permissions & Overrides</span>
+            </Button>
+          </Link>
           <Link href={`/users/${user.id}/edit`} className="flex-1 sm:flex-initial">
             <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs w-full sm:w-auto">
               <Edit className="h-3.5 w-3.5" />
@@ -372,14 +378,22 @@ export function UserDetailsView({ userId }: UserDetailsViewProps) {
 
         {/* RBAC Permissions List */}
         <Card className="md:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
-              <span>Assigned RBAC Permissions</span>
-            </CardTitle>
-            <CardDescription className="text-xs">
-              System access capabilities inherited through role or custom assignment.
-            </CardDescription>
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                <span>Assigned RBAC Permissions</span>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                System access capabilities inherited through role or direct user overrides.
+              </CardDescription>
+            </div>
+            <Link href={`/users/${user.id}/permissions`}>
+              <Button variant="outline" size="xs" className="h-7 text-xs gap-1.5 cursor-pointer">
+                <KeyRound className="size-3 text-primary" />
+                <span>Manage & Overrides</span>
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             {Array.isArray(user.permissions) && user.permissions.length > 0 ? (

@@ -16,6 +16,7 @@ import {
   Eye,
   Filter,
   Globe,
+  KeyRound,
   Loader2,
   Mail,
   MoreHorizontal,
@@ -820,6 +821,12 @@ export function UsersTable() {
                               <DropdownMenuItem className="cursor-pointer text-xs gap-2">
                                 <Edit className="size-3.5 text-muted-foreground" />
                                 <span>Edit Account</span>
+                              </DropdownMenuItem>
+                            </Link>
+                            <Link href={`/users/${u.id}/permissions`}>
+                              <DropdownMenuItem className="cursor-pointer text-xs gap-2">
+                                <KeyRound className="size-3.5 text-primary" />
+                                <span>Manage Permissions</span>
                               </DropdownMenuItem>
                             </Link>
                             <DropdownMenuItem
