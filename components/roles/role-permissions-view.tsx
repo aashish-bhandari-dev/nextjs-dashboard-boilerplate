@@ -175,7 +175,7 @@ export function RolePermissionsView({ roleId }: RolePermissionsViewProps) {
       {/* Top Header Bar */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
         <div className="flex items-center gap-3">
-          <Link href={`/roles/${role.id}`}>
+          <Link href={`/roles`}>
             <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Back</span>
@@ -231,7 +231,7 @@ export function RolePermissionsView({ roleId }: RolePermissionsViewProps) {
 
       {/* Main Permissions Card */}
       <Card className="shadow-xs border-border/60">
-        <CardHeader className="p-6 pb-4 border-b border-border/40">
+        <CardHeader className="border-b border-border/40">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -270,7 +270,7 @@ export function RolePermissionsView({ roleId }: RolePermissionsViewProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="space-y-6">
           {/* Controls Bar */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">

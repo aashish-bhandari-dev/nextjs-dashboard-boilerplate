@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   Sparkles,
   Trash2,
+  Unlock,
   Users,
   X,
 } from "lucide-react";
@@ -464,7 +465,7 @@ export function RolesTable() {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {isSuperAdmin ? (
                             <Badge className="text-[10px] bg-violet-600 hover:bg-violet-700 text-white font-mono font-bold px-2 py-0.5 shadow-2xs">
-                              <Sparkles className="size-2.5 mr-1" />
+                              <Unlock className="size-2.5 mr-1" />
                               * FULL PLATFORM ACCESS
                             </Badge>
                           ) : permissionCount === 0 ? (
