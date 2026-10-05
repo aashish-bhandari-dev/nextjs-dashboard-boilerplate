@@ -34,7 +34,7 @@ const navigationItems = [
       },
       {
         title: "Analytics",
-        href: "#analytics",
+        href: "/analytics",
         icon: BarChart3,
       },
     ],

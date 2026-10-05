@@ -3,7 +3,7 @@ import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout"
 import { UsersTable } from "@/components/users/users-table";
 
 export const metadata: Metadata = {
-  title: "User Directory | AdminHub",
+  title: `User Directory | ${process.env.NEXT_PUBLIC_APP_NAME}`,
   description: "Manage platform users, roles, account statuses, and access permissions.",
 };
 

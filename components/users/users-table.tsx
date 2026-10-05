@@ -246,14 +246,11 @@ export function UsersTable() {
     <div className="space-y-5 min-w-0 max-w-full w-full">
       {/* Page Header: Title, Description & Action Buttons */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
+        <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               User Directory
             </h1>
-            <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5 rounded-md">
-              {totalCount} {totalCount === 1 ? "user" : "users"}
-            </Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
             Manage authenticated accounts, assigned roles, security credentials, and access statuses.

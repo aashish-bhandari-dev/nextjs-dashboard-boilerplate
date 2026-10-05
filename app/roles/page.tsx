@@ -15,7 +15,7 @@ export default function RolesPage() {
       <div className="w-full max-w-7xl mx-auto space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
+          <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Roles & Permissions
             </h1>

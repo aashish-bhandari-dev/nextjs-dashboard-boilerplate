@@ -3,7 +3,7 @@ import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout"
 import { RoleDetailsView } from "@/components/roles/role-details-view";
 
 export const metadata: Metadata = {
-  title: "Role Configuration & Details | AdminHub",
+  title: `Role Configuration & Details | ${process.env.NEXT_PUBLIC_APP_NAME}`,
   description: "View comprehensive role metadata, granted authorization policies, and assigned users.",
 };
 

@@ -3,7 +3,7 @@ import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout"
 import { UserForm } from "@/components/users/user-form";
 
 export const metadata: Metadata = {
-  title: "Edit User | AdminHub",
+  title: `Edit User | ${process.env.NEXT_PUBLIC_APP_NAME}`,
   description: "Update user account information, assigned roles, and access credentials.",
 };
 

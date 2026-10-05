@@ -3,7 +3,7 @@ import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout"
 import { RolePermissionsView } from "@/components/roles/role-permissions-view";
 
 export const metadata: Metadata = {
-  title: "Manage Role Permissions | AdminHub",
+  title: `Manage Role Permissions | ${process.env.NEXT_PUBLIC_APP_NAME}`,
   description: "Configure and sync granular authorization policies for this role.",
 };
 
