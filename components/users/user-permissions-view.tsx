@@ -222,7 +222,7 @@ export function UserPermissionsView({ userId }: UserPermissionsViewProps) {
     : "U";
 
   return (
-    <div className="space-y-6 w-full max-w-6xl mx-auto pb-16">
+    <div className="space-y-6 w-full max-w-7xl mx-auto pb-16">
       {/* Top Header & Navigation Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-border/70 pb-5">
         <div className="flex items-start gap-3.5 min-w-0">

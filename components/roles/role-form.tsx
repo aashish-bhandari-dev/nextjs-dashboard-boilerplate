@@ -249,7 +249,7 @@ export function RoleForm({ isEdit = false, roleId }: RoleFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-full min-[1800px]:max-w-6xl mx-auto pb-16">
+    <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-7xl mx-auto pb-16">
       {/* Top Header Bar */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
         <div className="flex items-center gap-3">

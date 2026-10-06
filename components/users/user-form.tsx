@@ -534,7 +534,7 @@ export function UserForm({ initialData, userId, isEdit = false }: UserFormProps)
 
   if (isLoadingUser) {
     return (
-      <div className="flex h-96 w-full max-w-full min-[1800px]:max-w-6xl mx-auto flex-col items-center justify-center gap-3 text-muted-foreground">
+      <div className="flex h-96 w-full max-w-7xl mx-auto flex-col items-center justify-center gap-3 text-muted-foreground">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <span className="text-xs font-medium">Loading user record...</span>
       </div>
@@ -546,7 +546,7 @@ export function UserForm({ initialData, userId, isEdit = false }: UserFormProps)
     : "U";
 
   return (
-    <div ref={topRef} className="w-full max-w-full min-[1800px]:max-w-6xl mx-auto space-y-6">
+    <div ref={topRef} className="w-full max-w-7xl mx-auto space-y-6">
       {/* Top Header Bar */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
         <div className="flex items-center gap-3">

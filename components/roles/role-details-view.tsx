@@ -152,7 +152,7 @@ export function RoleDetailsView({ roleId }: RoleDetailsViewProps) {
   }
 
   return (
-    <div className="space-y-6 w-full max-w-6xl mx-auto pb-12">
+    <div className="space-y-6 w-full max-w-7xl mx-auto pb-12">
 
       {/* Top Header & Navigation Bar */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
