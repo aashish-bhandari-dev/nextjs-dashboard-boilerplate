@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { RoleForm } from "@/components/roles/role-form";
 
 export const metadata: Metadata = {
@@ -8,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function CreateRolePage() {
-  return (
-    <DashboardLayoutWrapper>
-      <RoleForm isEdit={false} />
-    </DashboardLayoutWrapper>
-  );
+  return <RoleForm isEdit={false} />;
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { UsersTable } from "@/components/users/users-table";
 
 export const metadata: Metadata = {
@@ -9,10 +8,8 @@ export const metadata: Metadata = {
 
 export default function UsersPage() {
   return (
-    <DashboardLayoutWrapper>
-      <div className="w-full max-w-7xl mx-auto">
-        <UsersTable />
-      </div>
-    </DashboardLayoutWrapper>
+    <div className="w-full max-w-7xl mx-auto">
+      <UsersTable />
+    </div>
   );
 }

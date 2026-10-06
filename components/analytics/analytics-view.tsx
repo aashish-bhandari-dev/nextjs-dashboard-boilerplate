@@ -10,7 +10,6 @@ import {
   Users2,
   Zap,
 } from "lucide-react";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { UserGrowthChart } from "@/components/analytics/user-growth-chart";
 import { PerformanceTrafficChart } from "@/components/analytics/performance-traffic-chart";
 import { ConversionFunnel } from "@/components/analytics/conversion-funnel";
@@ -63,8 +62,7 @@ export function AnalyticsView() {
   };
 
   return (
-    <DashboardLayoutWrapper>
-      <div className="w-full max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-6">
         {/* Top Header & Range Controls */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -176,6 +174,5 @@ export function AnalyticsView() {
           <GeographicBreakdown />
         </div>
       </div>
-    </DashboardLayoutWrapper>
   );
 }

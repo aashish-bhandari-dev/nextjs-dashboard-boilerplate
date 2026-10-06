@@ -13,7 +13,6 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { RevenueOverviewChart } from "@/components/dashboard/revenue-overview-chart";
 import { ChannelDistributionChart } from "@/components/dashboard/channel-distribution-chart";
@@ -24,8 +23,7 @@ export function DashboardView() {
   const [timeRange, setTimeRange] = React.useState<"7d" | "30d" | "90d">("30d");
 
   return (
-    <DashboardLayoutWrapper>
-      <div className="w-full max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-6">
         {/* Modern Welcome & Action Banner */}
         <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/40 p-5 sm:p-6 shadow-xs">
           <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -159,6 +157,5 @@ export function DashboardView() {
           </Card>
         </div>
       </div>
-    </DashboardLayoutWrapper>
   );
 }

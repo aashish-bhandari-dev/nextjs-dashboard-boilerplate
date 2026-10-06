@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { UserForm } from "@/components/users/user-form";
 
 export const metadata: Metadata = {
@@ -8,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function CreateUserPage() {
-  return (
-    <DashboardLayoutWrapper>
-      <UserForm isEdit={false} />
-    </DashboardLayoutWrapper>
-  );
+  return <UserForm isEdit={false} />;
 }

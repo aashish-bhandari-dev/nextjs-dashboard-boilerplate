@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { UserForm } from "@/components/users/user-form";
 
 export const metadata: Metadata = {
@@ -14,9 +13,5 @@ interface EditUserPageProps {
 export default async function EditUserPage({ params }: EditUserPageProps) {
   const { id } = await params;
 
-  return (
-    <DashboardLayoutWrapper>
-      <UserForm isEdit={true} userId={id} />
-    </DashboardLayoutWrapper>
-  );
+  return <UserForm isEdit={true} userId={id} />;
 }

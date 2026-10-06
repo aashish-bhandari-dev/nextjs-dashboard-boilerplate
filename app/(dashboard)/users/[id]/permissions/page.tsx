@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { UserPermissionsView } from "@/components/users/user-permissions-view";
 
 export const metadata: Metadata = {
@@ -14,9 +13,5 @@ interface UserPermissionsPageProps {
 export default async function UserPermissionsPage({ params }: UserPermissionsPageProps) {
   const { id } = await params;
 
-  return (
-    <DashboardLayoutWrapper>
-      <UserPermissionsView userId={id} />
-    </DashboardLayoutWrapper>
-  );
+  return <UserPermissionsView userId={id} />;
 }

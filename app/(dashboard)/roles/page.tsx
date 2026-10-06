@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { RolesTable } from "@/components/roles/roles-table";
 import { PermissionsCatalogView } from "@/components/roles/permissions-catalog-view";
 import { KeyRound, ShieldCheck } from "lucide-react";
@@ -11,8 +10,7 @@ export default function RolesPage() {
   const [activeTab, setActiveTab] = React.useState<"roles" | "permissions">("roles");
 
   return (
-    <DashboardLayoutWrapper>
-      <div className="w-full max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -62,7 +60,6 @@ export default function RolesPage() {
           <PermissionsCatalogView />
         )}
       </div>
-    </DashboardLayoutWrapper>
   );
 }
 

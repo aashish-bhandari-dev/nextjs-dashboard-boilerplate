@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { RolePermissionsView } from "@/components/roles/role-permissions-view";
 
 export const metadata: Metadata = {
@@ -14,9 +13,5 @@ interface RolePermissionsPageProps {
 export default async function RolePermissionsPage({ params }: RolePermissionsPageProps) {
   const { id } = await params;
 
-  return (
-    <DashboardLayoutWrapper>
-      <RolePermissionsView roleId={id} />
-    </DashboardLayoutWrapper>
-  );
+  return <RolePermissionsView roleId={id} />;
 }

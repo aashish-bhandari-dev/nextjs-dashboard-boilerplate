@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DashboardLayoutWrapper } from "@/components/dashboard/dashboard-layout";
 import { RoleDetailsView } from "@/components/roles/role-details-view";
 
 export const metadata: Metadata = {
@@ -14,9 +13,5 @@ interface RoleDetailsPageProps {
 export default async function RoleDetailsPage({ params }: RoleDetailsPageProps) {
   const { id } = await params;
 
-  return (
-    <DashboardLayoutWrapper>
-      <RoleDetailsView roleId={id} />
-    </DashboardLayoutWrapper>
-  );
+  return <RoleDetailsView roleId={id} />;
 }
