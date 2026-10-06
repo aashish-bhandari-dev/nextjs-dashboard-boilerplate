@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { UsersTable } from "@/components/users/users-table";
+import { UsersView } from "@/components/users/users-view";
 
 export const metadata: Metadata = {
   title: `User Directory | ${process.env.NEXT_PUBLIC_APP_NAME}`,
@@ -7,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function UsersPage() {
-  return (
-    <div className="w-full max-w-7xl mx-auto">
-      <UsersTable />
-    </div>
-  );
+  return <UsersView />;
 }

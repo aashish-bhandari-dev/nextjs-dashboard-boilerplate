@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RoleForm } from "@/components/roles/role-form";
+import { CreateRoleView } from "@/components/roles/create-role-view";
 
 export const metadata: Metadata = {
   title: `Create Role | ${process.env.NEXT_PUBLIC_APP_NAME}`,
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function CreateRolePage() {
-  return <RoleForm isEdit={false} />;
+  return <CreateRoleView />;
 }

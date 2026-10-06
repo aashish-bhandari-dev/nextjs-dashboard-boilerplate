@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { UserForm } from "@/components/users/user-form";
+import { EditUserView } from "@/components/users/edit-user-view";
 
 export const metadata: Metadata = {
   title: `Edit User | ${process.env.NEXT_PUBLIC_APP_NAME}`,
@@ -13,5 +13,5 @@ interface EditUserPageProps {
 export default async function EditUserPage({ params }: EditUserPageProps) {
   const { id } = await params;
 
-  return <UserForm isEdit={true} userId={id} />;
+  return <EditUserView userId={id} />;
 }

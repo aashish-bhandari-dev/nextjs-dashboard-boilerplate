@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RoleForm } from "@/components/roles/role-form";
+import { EditRoleView } from "@/components/roles/edit-role-view";
 
 export const metadata: Metadata = {
   title: `Edit Role Policy | ${process.env.NEXT_PUBLIC_APP_NAME}`,
@@ -13,5 +13,5 @@ interface EditRolePageProps {
 export default async function EditRolePage({ params }: EditRolePageProps) {
   const { id } = await params;
 
-  return <RoleForm isEdit={true} roleId={id} />;
+  return <EditRoleView roleId={id} />;
 }

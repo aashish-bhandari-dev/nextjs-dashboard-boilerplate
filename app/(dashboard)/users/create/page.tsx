@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { UserForm } from "@/components/users/user-form";
+import { CreateUserView } from "@/components/users/create-user-view";
 
 export const metadata: Metadata = {
   title: `Create User | ${process.env.NEXT_PUBLIC_APP_NAME}`,
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function CreateUserPage() {
-  return <UserForm isEdit={false} />;
+  return <CreateUserView />;
 }
