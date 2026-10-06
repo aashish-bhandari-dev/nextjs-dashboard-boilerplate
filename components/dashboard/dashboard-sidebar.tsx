@@ -20,8 +20,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const navigationItems = [
   {
@@ -68,20 +72,35 @@ export function DashboardSidebar() {
   return (
     <Sidebar collapsible="icon">
       {/* Brand Header */}
-      <SidebarHeader className="group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
-        <SidebarMenu className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:items-center">
-          <SidebarMenuItem className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
-            <Link
-              href="/"
-              className="w-full flex items-center group-data-[collapsible=icon]:justify-center"
-            >
-              {/* Collapsed view: Logo only, perfectly centered */}
-              <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center size-8 rounded-lg bg-primary text-primary-foreground font-black text-xs tracking-wider shadow-sm shrink-0">
-                AH
-              </div>
+      <SidebarHeader className="h-16 flex items-center justify-between px-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:h-16 shrink-0">
+        <SidebarMenu className="w-full group-data-[collapsible=icon]:items-center">
+          <SidebarMenuItem className="w-full flex items-center group-data-[collapsible=icon]:justify-center">
+            {/* Collapsed view: Logo only, perfectly centered with tooltip */}
+            <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center">
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Link
+                      href="/"
+                      className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black text-xs tracking-wider shadow-sm shrink-0 hover:opacity-90 transition-opacity"
+                    >
+                      AH
+                    </Link>
+                  }
+                />
+                <TooltipContent side="right" align="center" sideOffset={12}>
+                  AdminHub Console
+                </TooltipContent>
+              </Tooltip>
+            </div>
 
-              {/* Expanded view: Full menu button with logo and text */}
-              <SidebarMenuButton size="lg" className="hover:bg-muted group-data-[collapsible=icon]:hidden">
+            {/* Expanded view: Full menu button with logo and text */}
+            <SidebarMenuButton
+              asChild
+              size="lg"
+              className="hover:bg-muted group-data-[collapsible=icon]:hidden w-full"
+            >
+              <Link href="/" className="flex items-center gap-2.5">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-black text-xs tracking-wider shadow-sm shrink-0">
                   AH
                 </div>
@@ -91,8 +110,8 @@ export function DashboardSidebar() {
                     Enterprise Console
                   </span>
                 </div>
-              </SidebarMenuButton>
-            </Link>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -110,18 +129,18 @@ export function DashboardSidebar() {
 
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <Link
-                        href={item.href}
-                        className="w-full flex items-center group-data-[collapsible=icon]:justify-center"
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        tooltip={item.title}
                       >
-                        <SidebarMenuButton
-                          isActive={active}
-                          tooltip={item.title}
-                        >
+                        <Link href={item.href}>
                           <Icon className="size-4 shrink-0" />
-                          <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                        </SidebarMenuButton>
-                      </Link>
+                          <span className="group-data-[collapsible=icon]:hidden font-medium">
+                            {item.title}
+                          </span>
+                        </Link>
+                      </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
                 })}
@@ -132,18 +151,27 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       {/* Clean Minimal Sidebar Footer */}
-      <SidebarFooter>
-        <div className="flex items-center justify-between px-2 py-1 text-[11px] text-muted-foreground group-data-[collapsible=icon]:hidden">
+      <SidebarFooter className="border-t p-3 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+        <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground group-data-[collapsible=icon]:hidden w-full">
           <span className="font-medium">AdminHub v1.0</span>
           <span className="inline-flex items-center gap-1 text-[10px] text-emerald-500 font-semibold">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Online
           </span>
         </div>
+        <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-xs cursor-pointer" />
+              }
+            />
+            <TooltipContent side="right" align="center" sideOffset={12}>
+              System Online (v1.0)
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </SidebarFooter>
-
-      {/* Interactive Rail */}
-      <SidebarRail />
     </Sidebar>
   );
 }

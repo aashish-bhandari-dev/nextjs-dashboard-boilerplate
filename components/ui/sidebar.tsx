@@ -8,9 +8,13 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useSidebarStore } from "@/store/sidebar.store";
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
@@ -45,7 +49,7 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = true,
+      defaultOpen,
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -55,34 +59,37 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
+    void defaultOpen;
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
 
-    // Internal state for desktop
-    const [_open, _setOpen] = React.useState(defaultOpen);
-    const open = openProp !== undefined ? openProp : _open;
+    const {
+      open: storeOpen,
+      setOpen: storeSetOpen,
+      toggleSidebar: storeToggle,
+    } = useSidebarStore();
+
+    // Use controlled open prop if supplied, otherwise use persistent store
+    const open = openProp !== undefined ? openProp : storeOpen;
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value;
         if (setOpenProp) {
-          setOpenProp(openState);
+          const next = typeof value === "function" ? value(open) : value;
+          setOpenProp(next);
         } else {
-          _setOpen(openState);
-        }
-
-        // Set cookie
-        if (typeof document !== "undefined") {
-          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+          storeSetOpen(value);
         }
       },
-      [setOpenProp, open]
+      [setOpenProp, open, storeSetOpen]
     );
 
     const toggleSidebar = React.useCallback(() => {
       return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open);
-    }, [isMobile, setOpen, setOpenMobile]);
+        ? setOpenMobile((prev) => !prev)
+        : openProp !== undefined
+        ? setOpen((prev) => !prev)
+        : storeToggle();
+    }, [isMobile, openProp, setOpen, storeToggle]);
 
     // Keyboard shortcut (Cmd+B / Ctrl+B)
     React.useEffect(() => {
@@ -232,7 +239,7 @@ const Sidebar = React.forwardRef<
         />
         <div
           className={cn(
-            "duration-200 fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] ease-linear md:flex",
+            "duration-200 fixed inset-y-0 z-20 hidden h-svh w-(--sidebar-width) transition-[left,right,width] ease-linear md:flex",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -245,7 +252,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-card border-r"
+            className="flex h-full w-full flex-col bg-card border-r shadow-xs"
           >
             {children}
           </div>
@@ -297,7 +304,7 @@ const SidebarRail = React.forwardRef<
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
+        "absolute inset-y-0 z-20 hidden w-3 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-1.5 group-data-[side=right]:left-0 sm:flex",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
@@ -408,7 +415,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:items-center",
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden p-2 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:items-center",
         className
       )}
       {...props}
@@ -445,7 +452,7 @@ const SidebarGroupLabel = React.forwardRef<
       data-sidebar="group-label"
       className={cn(
         "duration-200 flex h-7 shrink-0 items-center rounded-md px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground outline-none transition-[margin,opacity] ease-linear",
-        "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
+        "group-data-[collapsible=icon]:hidden",
         className
       )}
       {...props}
@@ -549,32 +556,77 @@ const SidebarMenuButton = React.forwardRef<
   React.ComponentProps<"button"> & {
     asChild?: boolean;
     isActive?: boolean;
-    tooltip?: string;
+    tooltip?: string | React.ComponentProps<typeof TooltipContent>;
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
     {
+      asChild = false,
       isActive = false,
       variant = "default",
       size = "default",
+      tooltip,
       className,
+      children,
       ...props
     },
     ref
   ) => {
-    return (
-      <button
-        ref={ref}
-        data-sidebar="menu-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(
-          sidebarMenuButtonVariants({ variant, size }),
-          className
-        )}
-        {...props}
-      />
-    );
+    const { isMobile, state } = useSidebar();
+
+    const buttonProps = {
+      "data-sidebar": "menu-button",
+      "data-size": size,
+      "data-active": isActive,
+      className: cn(
+        sidebarMenuButtonVariants({ variant, size }),
+        className
+      ),
+      ...props,
+    };
+
+    let buttonElement: React.ReactElement;
+    if (asChild && React.isValidElement(children)) {
+      const child = children as React.ReactElement<React.ComponentPropsWithRef<"button">>;
+      buttonElement = React.cloneElement(child, {
+        ref,
+        ...buttonProps,
+        className: cn(buttonProps.className, child.props.className),
+      });
+    } else {
+      buttonElement = (
+        <button ref={ref} {...buttonProps}>
+          {children}
+        </button>
+      );
+    }
+
+    if (!tooltip) {
+      return buttonElement;
+    }
+
+    const tooltipContent =
+      typeof tooltip === "string" ? tooltip : tooltip.children;
+    const tooltipProps = typeof tooltip === "object" ? tooltip : {};
+
+    // When on desktop and collapsed, wrap in Tooltip so hovering shows the title on the right
+    if (state === "collapsed" && !isMobile) {
+      return (
+        <Tooltip>
+          <TooltipTrigger render={buttonElement} delay={0} />
+          <TooltipContent
+            side="right"
+            align="center"
+            sideOffset={12}
+            {...tooltipProps}
+          >
+            {tooltipContent}
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return buttonElement;
   }
 );
 SidebarMenuButton.displayName = "SidebarMenuButton";
