@@ -1,0 +1,38 @@
+# Dependency directories
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Next.js build output
+.next
+out
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Environment files (do not bake local secrets into the Docker image)
+.env*.local
+
+# Editor and OS files
+.editorconfig
+.prettierrc
+.prettierignore
+.eslint*
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Documentation and agent instructions
+README.md
+AGENTS.md
+CLAUDE.md
+
+# Docker files
+Dockerfile*
+docker-compose*
+.dockerignore

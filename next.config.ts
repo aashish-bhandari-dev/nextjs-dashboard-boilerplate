@@ -6,6 +6,7 @@ const BACKEND_URL = (
 ).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Proxy backend API requests through Next.js rewrite engine
   async rewrites() {
     return [
